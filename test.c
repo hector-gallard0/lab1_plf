@@ -93,28 +93,33 @@ char *buscarComponente(char c_str[]){
     return "NULL";
 }
 
-void analizarTexto(char *text, char current_c_str[], char **current_component, FILE *fp){
-    // int next_c = fgetc(fp);
-    // char next_c_str[2] = {next_c, '\0'};
-    // char *next_component;
-    // printf("%c", current_c_str);
-    // next_component = buscarComponente(current_c_str);
-
-    //Si el componente de la cadena es igual al componente del caracter
-    // if(strcmp(*current_component, next_component) != 0){
-    //     //Si es identificador
-    //     if(strcmp(*current_component, componentes[0]) == 0){
-    //         printf("IDENTIFICADOR -> %s", *text);
-    //     }
-    // }else{
-    //     if(strcmp(*current_component, componentes[0]) == 0){
-    //         text = realloc(text, (sizeof(char)*(strlen(text) + 2)));            
-    //         strcat(text, current_c_str);    
-    //     }
-    // }
+void analizarTexto(char **text, char current_c_str[], char **current_component, FILE *fp){
+    int next_c = fgetc(fp);
+    char next_c_str[2] = {next_c, '\0'};
+    char *next_component;
+    // printf("hola" );
+    next_component = buscarComponente(current_c_str);
+    printf("next component -> %s\n", next_component);
+    // printf("%s", next_component);
+    // Si el componente de la cadena es igual al componente del caracter
+    if(strcmp(*current_component, next_component) != 0){        
+        // printf("son distintos");
+        //Si es identificador
+        if(strcmp(*current_component, componentes[0]) == 0){
+            // printf("IDENTIFICADOR -> %s", *text);
+        }
+    }else{
+        //si el componente es un identificador
+        if(strcmp(*current_component, componentes[0]) == 0){
+            *text = realloc(*text, (sizeof(char) * (strlen(*text) + strlen(current_c_str) + 1)));
+            strcat(*text, current_c_str);    
+            fseek(fp, -1L, SEEK_CUR);
+        }
+    }
     
-    text = realloc(text, (sizeof(char)*(strlen(text) + 2)));            
-    strcat(text, current_c_str);    
+    // printf("son iguales");
+    // *text = realloc(*text, (sizeof(char) * (strlen(*text) + strlen(current_c_str) + 1)));
+    // strcat(*text, current_c_str);    
     // fseek(fp, -1L, SEEK_CUR);
     
 }
@@ -130,14 +135,15 @@ int main(int argc, char* argv[]){
     }
 
     char *text = (char*)malloc(sizeof(char));
-    text[0] = '\0';
+    strcpy(text, "");
     int i = 2;
     char *componente = componentes[0];      
     // printf("%s", componente);     
     while ((c = fgetc(fp)) != EOF) {        
         char c_str[2] = {c, '\0'};  
-        printf("%s", c_str);
-        analizarTexto(text, c_str, &componente, fp);        
+        // printf("%s", c_str);
+        analizarTexto(&text, c_str, &componente, fp);        
+        // modificar(&text, c_str);
         // printf("%s", text);
         // break;
         // text = realloc(text, (sizeof(char)*i));
@@ -146,7 +152,7 @@ int main(int argc, char* argv[]){
         // i = i + 1;
     }
 
-    // printf("\n%s", text);
+    printf("\n%s", text);
     free(text);
     fclose(fp);
     return 0;
