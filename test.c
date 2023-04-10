@@ -122,6 +122,16 @@ void lexicalAnalysis(char c_str[], char next_c_str[], char **text, char **text_c
             *text_component = "DECIMAL";
         }
         else{
+            //aca se debe borrar la , de text
+            reset(&*text);
+            concat(&*text, c_str);            
+            *text_component = findComponent(c_str);
+        }
+    }
+    else if(strcmp(*text_component, "DECIMAL") == 0){
+        if(isDigit(c_str) == 1){
+            concat(&*text, c_str);
+        }else{
             reset(&*text);
             concat(&*text, c_str);            
             *text_component = findComponent(c_str);
