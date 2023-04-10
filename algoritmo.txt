@@ -1,0 +1,24 @@
+para cada caracter en archivo
+    busco tipo caracter
+    analizo con respecto al siguiente
+    agrego a cadena si corresponde
+    
+
+
+ciclo
+leo caracter
+busco tipo de caracter
+si tipo de cadena y tipo de caracter son distintos entonces
+si cadena es identificador
+escribir cadena tipo identificador
+reiniciar cadena
+agregar caracter
+si cadena es numero y caracter no es punto o E
+escribir cadena tipo entero
+reiniciar cadena
+agregar caracter
+si cadena es simbolo
+escribir cadena tipo simbolo
+reiniciar cadena
+agregar caracter
+si cadena es numero y caracter  punto o E
