@@ -17,7 +17,7 @@ int isLowerLetter(char c_str[]){
     return 0;
 }
 
-int esDigito(char c_str[]){
+int isDigit(char c_str[]){
     if(strcmp(c_str, "0") == 0 || strcmp(c_str, "1") == 0 || strcmp(c_str, "2") == 0 || strcmp(c_str, "3") == 0
     || strcmp(c_str, "4") == 0 || strcmp(c_str, "5") == 0 || strcmp(c_str, "6") == 0 || strcmp(c_str, "7") == 0
     || strcmp(c_str, "8") == 0 || strcmp(c_str, "9") == 0){
@@ -27,7 +27,7 @@ int esDigito(char c_str[]){
     return 0;
 }
 
-int esSimbolo(char c_str[]){
+int isSymbol(char c_str[]){
     if(strcmp(c_str, "+") == 0 || strcmp(c_str, "-") == 0 || strcmp(c_str, "X") == 0 || strcmp(c_str, ":") == 0 
     || strcmp(c_str, "/") == 0 || strcmp(c_str, "^") == 0 || strcmp(c_str, "|") == 0 || strcmp(c_str, "!") == 0 
     || strcmp(c_str, "(") == 0 || strcmp(c_str, ")") == 0 || strcmp(c_str, "=") == 0){
@@ -70,22 +70,99 @@ void concat(char **text, char c_str[]){
     strcat(*text, c_str);
 }
 
+void reset(char **text){
+    free(*text);
+    *text = strdup("");
+}
+
+int isSign(char c_str[]){
+    if(strcmp(c_str, "-") == 0 || strcmp(c_str, "+") == 0) return 1;
+
+    return 0;
+}
+
 int isValid(char c_str[]){
-    if(isLowerLetter(c_str) == 1 || esDigito(c_str)  == 1 || esSimbolo(c_str) == 1 || strcmp(c_str, ",") == 0 || strcmp(c_str, "E") == 0
+    if(isLowerLetter(c_str) == 1 || isDigit(c_str)  == 1 || isSymbol(c_str) == 1 || strcmp(c_str, ",") == 0 || strcmp(c_str, "E") == 0
     || isUpperLetter(c_str) == 1) return 1;
 
     return 0;
 }
 
-void lexicalAnalysis(char c_str[], char next_c_str[], char **text, char **text_component){
-    printf("%s, %s\n", c_str, next_c_str);
+char *findComponent(char c_str[]){
+    return "";
+}
 
-    if(isLowerLetter(c_str) == 1){
-        if(isLowerLetter(next_c_str) == 1){
-            concat(&text, c_str);
+void lexicalAnalysis(char c_str[], char next_c_str[], char **text, char **text_component){    
+    if(strcmp(*text_component, "IDENTIFICADOR") == 0){        
+        if(isLowerLetter(c_str) == 1 || isDigit(c_str) == 1){
+            concat(&*text, c_str);
         }
-        else if(isUpperLetter(c_str) == 1){
-
+        else{
+            reset(&*text);
+            concat(&*text, c_str);            
+            *text_component = findComponent(c_str);
+        }
+    }
+    else if(strcmp(*text_component, "ENTERO") == 0){
+        if(isDigit(c_str) == 1){
+            concat(&*text, c_str);
+        }
+        else if(strcmp(c_str, ",") == 0){
+            concat(&*text, c_str);
+            *text_component = ",";
+        }
+        else if(strcmp(c_str, "E") == 0){
+            concat(&*text, c_str);
+            *text_component = "E";
+        }
+    }
+    else if(strcmp(*text_component, ",") == 0){
+        if(isDigit(c_str) == 1){
+            concat(&*text, c_str);
+            *text_component = "DECIMAL";
+        }
+        else{
+            reset(&*text);
+            concat(&*text, c_str);            
+            *text_component = findComponent(c_str);
+        }
+    }
+    else if(strcmp(*text_component, "E") == 0){
+        if(isDigit(c_str) == 1){
+            concat(&*text, c_str);
+            *text_component = "EXPONENCIAL";
+        }
+        else if(isSign(c_str) == 1){
+            concat(&*text, c_str);
+            *text_component = c_str;
+        }
+        else{
+            //aca se debe borrar la E de text
+            reset(&*text);
+            concat(&*text, c_str);            
+            *text_component = findComponent(c_str);
+        }
+    }
+    else if(isSign(*text_component) == 1){
+        if(isDigit(c_str) == 1){
+            concat(&*text, c_str);
+            *text_component = "EXPONENCIAL";
+        }
+        else{
+            //aca se debe borrar el signo de text
+            reset(&*text);
+            concat(&*text, c_str);            
+            *text_component = findComponent(c_str);
+        }
+    }
+    else if(strcmp(*text_component, "EXPONENCIAL") == 0){
+        if(isDigit(c_str) == 1){
+            concat(&*text, c_str);
+        }
+        else{
+            reset(&*text);
+            concat(&*text, c_str);            
+            *text_component = findComponent(c_str);
         }
     }
 }
@@ -120,10 +197,9 @@ int main(int argc, char* argv[]){
             break;
         }
         
-        
         fseek(fp, -1, SEEK_CUR);
     }    
-    printf("\n%s", text);
+    
     free(text);
     fclose(fp);
     return 0;
