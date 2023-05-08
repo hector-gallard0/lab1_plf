@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <locale.h>
+#include <unistd.h>
 
 int isLowerLetter(char c_str[]){
     if(strcmp(c_str, "a") == 0 || strcmp(c_str, "b") == 0 || strcmp(c_str, "c") == 0 || strcmp(c_str, "d") == 0 
@@ -80,7 +81,7 @@ int isValid(char c_str[]){
 
 //Estamos asumiendo que es el primer caracter de texto
 char *findComponent(char c_str[]){
-    if(isLowerLetter(c_str) == 1 || isUpperLetter(c_str) == 1){
+    if(isLowerLetter(c_str) == 1 || isUpperLetter(c_str) == 1){        
         return "IDENTIFICADOR";
     }
     else if(isDigit(c_str) == 1){
@@ -116,7 +117,7 @@ void resetWithNewText(char **text, char *new_text){
 }
 
 int isReservedWord(char *text){
-    if(strcmp(text, "PI") == 0 ||  strcmp(text, "MOD") == 0 || strcmp(text, "SQR") == 0 || strcmp(text, "CUR") == 0
+    if(strcmp(text, "PI") == 0 || strcmp(text, "MOD") == 0 || strcmp(text, "SQR") == 0 || strcmp(text, "CUR") == 0
     || strcmp(text, "EXP") == 0 || strcmp(text, "LN") == 0 || strcmp(text, "LOG") == 0 || strcmp(text, "SGN") == 0
     || strcmp(text, "INT") == 0 || strcmp(text, "FIX") == 0 || strcmp(text, "FRAC") == 0 || strcmp(text, "ROUND") == 0) return 1;
 
@@ -126,16 +127,17 @@ int isReservedWord(char *text){
 int hasCharacter(char *text, char character){
     if (strchr(text, character) != NULL) {        
         return 1;
-    } else {        
-        return 0;
-    }
+    } 
+
+    return 0;    
 }
 
-void lexicalAnalysis(char c_str[], char next_c_str[], char **text, char **text_component){    
+void lexicalAnalysis(char c_str[], char **text, char **text_component, FILE *fp_out){        
     if(strcmp(*text_component, "IDENTIFICADOR") == 0){              
         if(isReservedWord(*text) == 1){
             resetWithNewText(&*text_component, *text);
-                ("%s -> %s\n", *text_component, *text);
+            // printf("%s\n", *text_component, *text);
+            fprintf(fp_out, "%s\n", *text_component, *text);
 
             reset(&*text);
             concat(&*text, c_str);     
@@ -145,7 +147,8 @@ void lexicalAnalysis(char c_str[], char next_c_str[], char **text, char **text_c
             concat(&*text, c_str);
         }
         else{
-            printf("%s -> %s\n", *text_component, *text);
+            // printf("%s\n", *text_component, *text);
+            fprintf(fp_out, "%s\n", *text_component, *text);
             
             reset(&*text);
             concat(&*text, c_str);     
@@ -165,7 +168,8 @@ void lexicalAnalysis(char c_str[], char next_c_str[], char **text, char **text_c
             resetWithNewText(&*text_component, "E");            
         }
         else{
-            printf("%s -> %s\n", *text_component, *text);
+            // printf("%s\n", *text_component, *text);
+            fprintf(fp_out, "%s\n", *text_component, *text);
 
             reset(&*text);
             concat(&*text, c_str);            
@@ -180,7 +184,8 @@ void lexicalAnalysis(char c_str[], char next_c_str[], char **text, char **text_c
         else{
             deleteLastChar(&*text);
             resetWithNewText(&*text_component, "ENTERO");      
-            printf("%s -> %s\n", *text_component, *text);
+            // printf("%s\n", *text_component, *text);
+            fprintf(fp_out, "%s\n", *text_component, *text);
             
             reset(&*text);
             concat(&*text, c_str);            
@@ -196,7 +201,8 @@ void lexicalAnalysis(char c_str[], char next_c_str[], char **text, char **text_c
             resetWithNewText(&*text_component, "E");            
         }
         else{
-            printf("%s -> %s\n", *text_component, *text);
+            // printf("%s\n", *text_component, *text);
+            fprintf(fp_out, "%s\n", *text_component, *text);
 
             reset(&*text);
             concat(&*text, c_str);            
@@ -220,7 +226,8 @@ void lexicalAnalysis(char c_str[], char next_c_str[], char **text, char **text_c
             }else{
                 resetWithNewText(&*text_component, "DECIMAL");      
             }
-            printf("%s -> %s\n", *text_component, *text);
+            // printf("%s\n", *text_component, *text);
+            fprintf(fp_out, "%s\n", *text_component, *text);
 
             reset(&*text);
             concat(&*text, c_str);            
@@ -234,13 +241,15 @@ void lexicalAnalysis(char c_str[], char next_c_str[], char **text, char **text_c
         }
         else{
             deleteLastChar(&*text);
+            deleteLastChar(&*text);
             if(hasCharacter(*text, ',') == 0){
                 resetWithNewText(&*text_component, "ENTERO");      
-
             }else{
                 resetWithNewText(&*text_component, "DECIMAL");      
             }    
-            printf("%s -> %s\n", *text_component, *text);
+
+            // printf("%s\n", *text_component, *text);
+            fprintf(fp_out, "%s\n", *text_component, *text);
 
             reset(&*text);
             concat(&*text, c_str);            
@@ -252,7 +261,8 @@ void lexicalAnalysis(char c_str[], char next_c_str[], char **text, char **text_c
             concat(&*text, c_str);
         }
         else{
-            printf("%s -> %s\n", *text_component, *text);
+            // printf("%s\n", *text_component, *text);
+            fprintf(fp_out, "%s\n", *text_component, *text);
 
             reset(&*text);
             concat(&*text, c_str);            
@@ -260,7 +270,8 @@ void lexicalAnalysis(char c_str[], char next_c_str[], char **text, char **text_c
         }
     }
     else if(strcmp(*text_component, "SIMBOLO") == 0){
-        printf("%s -> %s\n", *text_component, *text);
+        // printf("%s\n", *text_component, *text);
+        fprintf(fp_out, "%s\n", *text_component, *text);
 
         reset(&*text);
         concat(&*text, c_str);            
@@ -273,13 +284,32 @@ void lexicalAnalysis(char c_str[], char next_c_str[], char **text, char **text_c
     }
 }
 
-int main(int argc, char* argv[]){    
-    FILE *fp;
+int main(int argc, char* argv[]){             
+    FILE *fp_in, *fp_out;
     int c;
 
-    fp = fopen(argv[1], "r");
-    if (fp == NULL) {
-        printf("No se puede abrir el archivo");
+    if(argc < 2){
+        printf("Error: Faltan par%cmetros.\nUso: lexico.exe archivo_entrada archivo_salida\n", 160);
+        return 0;
+    }
+    else if(argc < 3){
+        printf("Error: Falta par%cmetro.\nUso: lexico.exe archivo_entrada archivo_salida\n", 160);
+        return 0;
+    }
+    else if(argc > 3){
+        printf("Error: Demasiados par%cmetros.\nUso: lexico.exe archivo_entrada archivo_salida\n", 160);
+        return 0;
+    }    
+
+    fp_in = fopen(argv[1], "r");
+    if (fp_in == NULL){
+        printf("Error: El archivo de entrada no existe.\n");
+        return 0;
+    }
+
+    fp_out = access(argv[2], F_OK ) != -1 ? NULL : fopen(argv[2], "w");    
+    if(fp_out == NULL){
+        printf("Error: El archivo de salida ya existe.\n");
         return 0;
     }
 
@@ -289,46 +319,32 @@ int main(int argc, char* argv[]){
     char *text_component = (char*)malloc(sizeof(char));
     strcpy(text_component, "");
 
-
-
     int inicio = 1;
           
-    while ((c = fgetc(fp)) != EOF) {            
+    while ((c = fgetc(fp_in)) != EOF) {            
         char c_str[2] = {c, '\0'};    
-        int next_c = fgetc(fp);
-        char next_c_str[2] = {next_c, '\0'};
+        int next_c = fgetc(fp_in);
+        char next_c_str[2] = {next_c, '\0'};    
 
         if(inicio == 1){
             resetWithNewText(&text_component, findComponent(c_str));     
             inicio = 0;       
         }
-
-        // test(&text, length);            
-        lexicalAnalysis(c_str, next_c_str, &text, &text_component);
         
+        lexicalAnalysis(c_str, &text, &text_component, fp_out);        
 
-        if(next_c == EOF){
-            if(isSign(c_str) == 1 || strcmp(c_str, ",") == 0 || strcmp(c_str, "E") == 0){
-                if(isSign(c_str) == 1){
-                    deleteLastChar(&text);
-                    deleteLastChar(&text);                
-                }
-                else if(strcmp(c_str, ",") == 0 || strcmp(c_str, "E") == 0){
-                    deleteLastChar(&text);                
-                }
-
-                if(hasCharacter(text, ',') == 0) resetWithNewText(&text_component, "ENTERO");      
-                else resetWithNewText(&text_component, "DECIMAL");      
-                
-            }
-            printf("%s -> %s\n", text_component, text);
+        if(next_c == EOF){        
+            lexicalAnalysis(next_c_str, &text, &text_component, fp_out);             
             break;
         }
         
-        fseek(fp, -1, SEEK_CUR);
+        fseek(fp_in, -1, SEEK_CUR);
     }    
     
     free(text);
-    fclose(fp);
+    free(text_component);
+    fclose(fp_in);
+    fclose(fp_out);
+
     return 0;
 }
