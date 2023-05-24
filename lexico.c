@@ -110,6 +110,11 @@ void deleteLastChar(char **text){
     (*text)[length - 1] = '\0';    
 }
 
+char getLastChar(char *text){
+    int length = strlen(text);
+    return text[length - 1];
+}
+
 void resetWithNewText(char **text, char *new_text){
     int length = strlen(new_text);    
     *text = realloc(*text, (sizeof(char) * length));
@@ -132,22 +137,22 @@ int hasCharacter(char *text, char character){
     return 0;    
 }
 
-void lexicalAnalysis(char c_str[], char **text, char **text_component, FILE *fp_out){        
-    if(strcmp(*text_component, "IDENTIFICADOR") == 0){              
-        if(isReservedWord(*text) == 1){
+void lexicalAnalysis(char c_str[], char **text, char **text_component, FILE *fp_out, FILE *fp_in){        
+    if(strcmp(*text_component, "IDENTIFICADOR") == 0){                     
+        if(isLowerLetter(c_str) == 1 || isDigit(c_str) == 1 || isUpperLetter(c_str) == 1){     
+            concat(&*text, c_str);
+        }
+        else if(isReservedWord(*text) == 1){
             resetWithNewText(&*text_component, *text);
-            // printf("%s\n", *text_component, *text);
+            printf("%s %s\n", *text_component, *text);
             fprintf(fp_out, "%s\n", *text_component, *text);
 
             reset(&*text);
             concat(&*text, c_str);     
             resetWithNewText(&*text_component, findComponent(c_str));                   
         }
-        else if(isLowerLetter(c_str) == 1 || isDigit(c_str) == 1 || isUpperLetter(c_str) == 1){            
-            concat(&*text, c_str);
-        }
         else{
-            // printf("%s\n", *text_component, *text);
+            printf("%s %s\n", *text_component, *text);
             fprintf(fp_out, "%s\n", *text_component, *text);
             
             reset(&*text);
@@ -168,7 +173,7 @@ void lexicalAnalysis(char c_str[], char **text, char **text_component, FILE *fp_
             resetWithNewText(&*text_component, "E");            
         }
         else{
-            // printf("%s\n", *text_component, *text);
+            printf("%s %s\n", *text_component, *text);
             fprintf(fp_out, "%s\n", *text_component, *text);
 
             reset(&*text);
@@ -184,7 +189,7 @@ void lexicalAnalysis(char c_str[], char **text, char **text_component, FILE *fp_
         else{
             deleteLastChar(&*text);
             resetWithNewText(&*text_component, "ENTERO");      
-            // printf("%s\n", *text_component, *text);
+            printf("%s %s\n", *text_component, *text);
             fprintf(fp_out, "%s\n", *text_component, *text);
             
             reset(&*text);
@@ -201,7 +206,7 @@ void lexicalAnalysis(char c_str[], char **text, char **text_component, FILE *fp_
             resetWithNewText(&*text_component, "E");            
         }
         else{
-            // printf("%s\n", *text_component, *text);
+            printf("%s %s\n", *text_component, *text);
             fprintf(fp_out, "%s\n", *text_component, *text);
 
             reset(&*text);
@@ -218,20 +223,30 @@ void lexicalAnalysis(char c_str[], char **text, char **text_component, FILE *fp_
             concat(&*text, c_str);
             resetWithNewText(&*text_component, c_str);     
         }
-        else{
+        else{                        
             deleteLastChar(&*text);
+            
             if(hasCharacter(*text, ',') == 0){
                 resetWithNewText(&*text_component, "ENTERO");      
 
             }else{
                 resetWithNewText(&*text_component, "DECIMAL");      
             }
-            // printf("%s\n", *text_component, *text);
-            fprintf(fp_out, "%s\n", *text_component, *text);
+            
+            printf("%s %s\n", *text_component, *text);
+            fprintf(fp_out, "%s\n", *text_component, *text);                                
 
-            reset(&*text);
-            concat(&*text, c_str);            
-            resetWithNewText(&*text_component, findComponent(c_str));  
+            if(isUpperLetter(c_str) == 1 || isLowerLetter(c_str) == 1 || isDigit(c_str) == 1){
+                concat(&*text, "E");            
+                concat(&*text, c_str);            
+                resetWithNewText(&*text_component, "IDENTIFICADOR");  
+            } else{
+                fprintf(fp_out, "%s\n", "IDENTIFICADOR"); //E     
+                printf("%s %s\n", "IDENTIFICADOR", "E");
+                reset(&*text);
+                concat(&*text, c_str);            
+                resetWithNewText(&*text_component, findComponent(c_str));  
+            }                    
         }
     }
     else if(isSign(*text_component) == 1){
@@ -240,6 +255,8 @@ void lexicalAnalysis(char c_str[], char **text, char **text_component, FILE *fp_
             resetWithNewText(&*text_component, "EXPONENCIAL");            
         }
         else{
+            char sign[2] = {getLastChar(*text), '\0'};
+
             deleteLastChar(&*text);
             deleteLastChar(&*text);
             if(hasCharacter(*text, ',') == 0){
@@ -248,8 +265,12 @@ void lexicalAnalysis(char c_str[], char **text, char **text_component, FILE *fp_
                 resetWithNewText(&*text_component, "DECIMAL");      
             }    
 
-            // printf("%s\n", *text_component, *text);
+            printf("%s %s\n", *text_component, *text);
             fprintf(fp_out, "%s\n", *text_component, *text);
+            printf("%s %s\n", "IDENTIFICADOR", "E");
+            fprintf(fp_out, "%s\n", "IDENTIFICADOR"); //E        
+            printf("%s %s\n", sign, sign);
+            fprintf(fp_out, "%s\n", sign); //signo
 
             reset(&*text);
             concat(&*text, c_str);            
@@ -261,7 +282,7 @@ void lexicalAnalysis(char c_str[], char **text, char **text_component, FILE *fp_
             concat(&*text, c_str);
         }
         else{
-            // printf("%s\n", *text_component, *text);
+            printf("%s %s\n", *text_component, *text);
             fprintf(fp_out, "%s\n", *text_component, *text);
 
             reset(&*text);
@@ -270,8 +291,8 @@ void lexicalAnalysis(char c_str[], char **text, char **text_component, FILE *fp_
         }
     }
     else if(strcmp(*text_component, "SIMBOLO") == 0){
-        // printf("%s\n", *text_component, *text);
-        fprintf(fp_out, "%s\n", *text_component, *text);
+        printf("%s %s\n", *text_component, *text);
+        fprintf(fp_out, "%s\n",  *text);
 
         reset(&*text);
         concat(&*text, c_str);            
@@ -331,10 +352,10 @@ int main(int argc, char* argv[]){
             inicio = 0;       
         }
         
-        lexicalAnalysis(c_str, &text, &text_component, fp_out);        
+        lexicalAnalysis(c_str, &text, &text_component, fp_out, fp_in);        
 
         if(next_c == EOF){        
-            lexicalAnalysis(next_c_str, &text, &text_component, fp_out);             
+            lexicalAnalysis(next_c_str, &text, &text_component, fp_out, fp_in);             
             break;
         }
         
